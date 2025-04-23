@@ -11,9 +11,13 @@ public class Snake {
 	private double deltaY;
 	
 	public Snake() {
+		segments = new LinkedList<>();
 		//FIXME - set up the segments instance variable
 		deltaX = 0;
 		deltaY = 0;
+		
+		BodySegment head = new BodySegment(0.5, 0.5, SEGMENT_SIZE);
+		segments.add(head);
 	}
 	
 	public void changeDirection(int direction) {
@@ -38,6 +42,19 @@ public class Snake {
 	 */
 	public void move() {
 		//FIXME
+		if (deltaX == 0 && deltaY == 0) return;
+
+		// 1. 从尾巴往前，依次复制前一节的位置
+		for (int i = segments.size() - 1; i > 0; i--) {
+			BodySegment prev = segments.get(i - 1);
+			segments.get(i).moveTo(prev.getX(), prev.getY());
+		}
+
+		// 2. 移动头部
+		BodySegment head = segments.get(0);
+		double newX = head.getX() + deltaX;
+		double newY = head.getY() + deltaY;
+		head.moveTo(newX, newY);
 	}
 	
 	/**
@@ -45,6 +62,9 @@ public class Snake {
 	 */
 	public void draw() {
 		//FIXME
+		for (BodySegment seg : segments) {
+			seg.draw();
+		}
 	}
 	
 	/**
@@ -54,6 +74,16 @@ public class Snake {
 	 */
 	public boolean eatFood(Food f) {
 		//FIXME
+		BodySegment head = segments.get(0);
+		double dist = Math.sqrt(Math.pow(head.getX() - f.getX(), 2) + Math.pow(head.getY() - f.getY(), 2));
+
+		if (dist <= SEGMENT_SIZE + Food.FOOD_SIZE) {
+			// 加一节到尾巴（用尾巴当前坐标）
+			BodySegment tail = segments.get(segments.size() - 1);
+			BodySegment newSegment = new BodySegment(tail.getX(), tail.getY(), SEGMENT_SIZE);
+			segments.add(newSegment);
+			return true;
+		}
 		return false;
 	}
 	
@@ -63,6 +93,9 @@ public class Snake {
 	 */
 	public boolean isInbounds() {
 		//FIXME
-		return true;
+		BodySegment head = segments.get(0);
+		double x = head.getX();
+		double y = head.getY();
+		return x >= 0 && x <= 1 && y >= 0 && y <= 1;
 	}
 }
